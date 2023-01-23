@@ -154,24 +154,26 @@ order by  s.company_name, extract(year from o.order_date)
 
 -- 2
 
-/*
-select o.order_id, o.order_date,
-avg(freight) over (partition by extract(year from o.order_Date)) ladunek
+select od.order_id, extract(year from o.order_date),
+avg(od.unit_price*od.quantity*(1-od.discount)) over (partition by od.order_id) srednia_kwota_zam
 from order_details od  
-join orders o
-on o.order_id =od.order_id 
+join orders o 
+on od.order_id=o.order_id 
 
-select o.order_date,
-avg(od.unit_price*od.quantity*(1-od.discount)) over (partition by extract(year from o.order_Date)) kwota
+create view srednia_kwota_zam as
+select od.order_id, extract(year from o.order_date),
+avg(od.unit_price*od.quantity*(1-od.discount)) over (partition by od.order_id) srednia_kwota_zam
 from order_details od  
-join orders o
-on o.order_id =od.order_id 
+join orders o 
+on od.order_id=o.order_id 
 
-select *
+select order_id, date_part,
+avg(srednia_kwota_zam) over (partition by date_part)
+from srednia_kwota_zam
+
+select *,
+avg(freight) over (partition by extract(year from order_Date)) sredni_ladunek
 from orders o 
-join order_details od 
-on o.order_id =od.order_id 
-*/ -- cos zle z avg freight przez to ze zlaczylo tabele. dlaczego? potrzebujemy jeszcze kwote zamowienia, a bierzemy z innej tabeli
 
 select 
 *, 
@@ -180,27 +182,8 @@ case
 	when freight>avg(freight) over (partition by extract(year from order_Date))  then 'powyzej srednije'
 	when freight=avg(freight) over (partition by extract(year from order_Date))  then 'ten sam'
 	else 'ponizej'
-end komnunikat
+end komunikat
 from orders o 
-
-create view sprawdz_srednia as
-select 
-*, 
-avg(freight) over (partition by extract(year from order_Date)) sredni_ladunek,
-case
-	when freight>avg(freight) over (partition by extract(year from order_Date))  then 'powyzej srednije'
-	when freight=avg(freight) over (partition by extract(year from order_Date))  then 'ten sam'
-	else 'ponizej'
-end komnunikat
-from orders o 
-
-select 
-extract(year from order_date), 
-komnunikat,
-count(*) liczba
-from sprawdz_srednia
-group by extract(year from order_date), komnunikat
-
 
 /* zad.4
 1) Za pomoc¹ group by wyznacz liczbê produktów zakupionych w poszczególnych zamówieniach.
