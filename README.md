@@ -1,2 +1,2 @@
-# SQL_exercises_
+# SQL exercises
 SQL exercises from northwind database
