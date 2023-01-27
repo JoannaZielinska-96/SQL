@@ -1,2 +1,1 @@
-# SQL
-rozwiązania zadań z zajęć 
+SQL exercises from northwind database
